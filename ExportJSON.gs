@@ -12,11 +12,40 @@ function exportJSON() {
   var values = rows.getValues();
   
   var output = "";
-  output += "{";
+  output += "{\""+sheet.getName()+"\" : {\n";
   var header = values[0];
   for (var i = 1; i < numRows; i++) {
     if (i > 1) output += " , \n";
-    output += "\""+sheet.getName()+"\" : {";
+    var row = values[i];
+    output += "\""+row[0]+"\" : {";
+    for (var a = 1;a<numCols;a++){
+      if (a > 1) output += " , ";
+         output += "\""+header[a]+"\" : \""+row[a]+"\"";
+    }
+    output += "}";
+    //Logger.log(row);
+  }
+  output += "\n}}";
+  Logger.log(output);
+  
+  DriveApp.createFile(sheet.getName()+".json", output, MimeType.PLAIN_TEXT);
+  
+};
+
+
+function exportJSONArray() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var rows = sheet.getDataRange();
+  var numRows = rows.getNumRows();
+  var numCols = rows.getNumColumns();
+  var values = rows.getValues();
+  
+  var output = "";
+  output += "{\""+sheet.getName()+"\" : [\n";
+  var header = values[0];
+  for (var i = 1; i < numRows; i++) {
+    if (i > 1) output += " , \n";
+    output += "{";
     var row = values[i];
     for (var a = 0;a<numCols;a++){
       if (a > 0) output += " , ";
@@ -25,14 +54,11 @@ function exportJSON() {
     output += "}";
     //Logger.log(row);
   }
-  output += "}";
+  output += "\n]}";
   Logger.log(output);
   
-  DriveApp.createFile(sheet.getName()+".json", output);
+  DriveApp.createFile(sheet.getName()+".json", output, MimeType.PLAIN_TEXT);
   
-  //ContentService.createTextOutput(output).downloadAsFile(sheet.getName()+".json").setMimeType(ContentService.MimeType.JSON);
-  //return ContentService.createTextOutput(output).downloadAsFile(sheet.getName()+".json").setMimeType(ContentService.MimeType.JSON);
-
 };
 
 /**
@@ -48,6 +74,9 @@ function onOpen() {
   var entries = [{
     name : "Export JSON",
     functionName : "exportJSON"
+  },{
+    name : "Export JSON Array",
+    functionName : "exportJSONArray"
   }];
   spreadsheet.addMenu("Export", entries);
 };
